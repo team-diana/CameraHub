@@ -1,20 +1,21 @@
-#include "FlyCapture2.h"
-#include "BusManager.h"
+#include "libs/FlyCapture2.h"
+#include "libs/BusManager.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
+
 using namespace FlyCapture2;
 
 #define IP_MQTT_BROKER "10.0.0.126"
 
 #define MQTTCLIENT_QOS2 1
 
-#include "MQTTClient.h"
+#include "libs/MQTTClient.h"
 
 #define DEFAULT_STACK_SIZE -1
 
-#include "linux.cpp"
+//#include "linux.cpp"
 
 int arrivedcount = 0;
 

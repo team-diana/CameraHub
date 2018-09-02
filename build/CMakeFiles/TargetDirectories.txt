@@ -1,0 +1,3 @@
+/home/nvidia/CameraHub/build/CMakeFiles/edit_cache.dir
+/home/nvidia/CameraHub/build/CMakeFiles/rebuild_cache.dir
+/home/nvidia/CameraHub/build/CMakeFiles/rect.dir

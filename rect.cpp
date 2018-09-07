@@ -5,6 +5,8 @@
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "MQTTClient.h"
+
 using namespace FlyCapture2;
 
 #define IP_MQTT_BROKER "10.0.0.126"
@@ -30,7 +32,6 @@ void messageArrived(MQTT::MessageData& md)
 
 int main()
 {
-
     const std::string SERVER_ADDRESS	{ "10.0.0.10" };
     const std::string CLIENT_ID		{ "T0-R0 video" };
     cv::Size bigimg(960,768);
@@ -114,39 +115,36 @@ int main()
     int lost =0;
 
 
+    //*  MQTT
+    const std::string TOPIC { "diagnostics" };
+    const std::string PAYLOAD1 { "Hello World!" };
 
-    //* MQTT connection
+    const char* PAYLOAD2 = "Hi there!";
 
-    IPStack ipstack = IPStack();
-    float version = 0.3;
-    const char* topic = "diagnostics";
+    // Create a client
+    mqtt::client cli("10.0.0.126", "Camera Hub");
 
-    printf("MQTT Version is %f\n", version);
+    mqtt::connect_options connOpts;
+    connOpts.set_keep_alive_interval(20);
+    connOpts.set_clean_session(true);
 
-    MQTT::Client client = MQTT::Client(ipstack);
 
-    const char* hostname = IP_MQTT_BROKER;
-    int port = 1883;
-    printf("MQTT: Connecting to %s:%d\n", hostname, port);
-    int rc = ipstack.connect(hostname, port);
-    if (rc != 0)
-        printf("Retrun Code: from TCP connect is %d\n", rc);
+    // Connect to the client
+    cli.connect(connOpts);
 
-    printf("MQTT connecting...\n");
-    MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
-    data.MQTTVersion = 3;
-    data.clientID.cstring = (char*)"Camera switch";
-    rc = client.connect(data);
-    if (rc != 0)
-        printf("rc from MQTT connect is %d\n", rc);
-    printf("MQTT connected\n");
+    // Publish using a message pointer.
+    auto msg = mqtt::make_message(TOPIC, PAYLOAD1);
+    msg->set_qos(QOS);
 
-    rc = client.subscribe(topic, MQTT::QOS2, messageArrived);
-    if (rc != 0)
-        printf("rc from MQTT subscribe is %d\n", rc);
+    cli.publish(msg);
 
-    //// MQTT ////
-    /**/
+    // Now try with itemized publish.
+    cli.publish(TOPIC, PAYLOAD2, strlen(PAYLOAD2), 0, false);
+
+    // Disconnect
+    // cli.disconnect();
+
+    /*MQTT*/
 
     while(key != 'q'){      // LOOP
 
@@ -219,59 +217,5 @@ int main()
 
     camera.Disconnect();
 
-
-    IPStack ipstack = IPStack();
-    float version = 0.3;
-    const char* topic = "mbed-sample";
-
-    printf("Version is %f\n", version);
-
-    MQTT::Client client = MQTT::Client(ipstack);
-
-    const char* hostname = "iot.eclipse.org";
-    int port = 1883;
-    printf("Connecting to %s:%d\n", hostname, port);
-    int rc = ipstack.connect(hostname, port);
-    if (rc != 0)
-        printf("rc from TCP connect is %d\n", rc);
-
-    printf("MQTT connecting\n");
-    MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
-    data.MQTTVersion = 3;
-    data.clientID.cstring = (char*)"mbed-icraggs";
-    rc = client.connect(data);
-    if (rc != 0)
-        printf("rc from MQTT connect is %d\n", rc);
-    printf("MQTT connected\n");
-
-    rc = client.subscribe(topic, MQTT::QOS2, messageArrived);
-    if (rc != 0)
-        printf("rc from MQTT subscribe is %d\n", rc);
-
-    MQTT::Message message;
-
-    // QoS 0
-    char buf[100];
-    sprintf(buf, "Hello World!  QoS 0 message from app version %f", version);
-    message.qos = MQTT::QOS0;
-    message.retained = false;
-    message.dup = false;
-    message.payload = (void*)buf;
-    message.payloadlen = strlen(buf)+1;
-    rc = client.publish(topic, message);
-    if (rc != 0)
-        printf("Error %d from sending QoS 0 message\n", rc);
-    else while (arrivedcount == 0)
-        client.yield(100);
-
-    rc = client.unsubscribe(topic);
-    if (rc != 0)
-        printf("rc from unsubscribe was %d\n", rc);
-
-    rc = client.disconnect();
-    if (rc != 0)
-        printf("rc from disconnect was %d\n", rc);
-
-    ipstack.disconnect();
     return 0;
 }

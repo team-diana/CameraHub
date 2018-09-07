@@ -6,7 +6,17 @@
 #include <opencv2/imgproc/imgproc.hpp>
 using namespace FlyCapture2;
 
-#define IP_MQTT_BROKER 10.0.0.126
+#define IP_MQTT_BROKER "10.0.0.126"
+
+#define MQTTCLIENT_QOS2 1
+
+#include "MQTTClient.h"
+
+#define DEFAULT_STACK_SIZE -1
+
+#include "linux.cpp"
+
+int arrivedcount = 0;
 
 void messageArrived(MQTT::MessageData& md)
 {

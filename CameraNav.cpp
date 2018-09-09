@@ -8,6 +8,11 @@
 #include "T0R0Vision.h"
 using namespace FlyCapture2;
 
+TcpServer *mouse_server = new TcpServer(MOUSE_PORT);
+TcpServer *thresh_server = new TcpServer(THRESH_PORT);
+TcpServer *cmds_server = new TcpServer(CMDS_PORT);
+T0R0Vision *vision = new T0R0Vision();
+
 int main()
 {
 double x, y;
@@ -30,9 +35,6 @@ const std::string CLIENT_ID		{ "T0-R0 video" };
   std::cout << "T0-R0 camera display and stream" << " ";
 //  scanf("%d", &set);
 
-TcpServer *mouse_server = new TcpServer(MOUSE_PORT);
-TcpServer *thresh_server = new TcpServer(THRESH_PORT);
-TcpServer *cmds_server = new TcpServer(CMDS_PORT);
 
 mouse_server->start16();
 thresh_server->start16();
@@ -217,14 +219,17 @@ while(key != 'q'){
   }
 
   cv::resize(matbig, matbig, bigimg, cv::INTER_CUBIC );
+  cv::resize(logo, logo, smallimg, cv::INTER_CUBIC );
+
 //    ++++++++++++  Rectangles assembly ++++++++++++++++++++++
         matbig.copyTo(win_mat(cv::Rect(  0, 0, 960, 768)));
         matPG_small.copyTo(win_mat(cv::Rect(0,760,320,256)));
         matARM_small.copyTo(win_mat(cv::Rect(320,760,320,256)));
         matNav_small.copyTo(win_mat(cv::Rect(640,760,320,256)));
+        logo.copyTo(win_mat(cv::Rect(960,0,320,256)));
         //cv::imshow("image", win_mat);
         out.write(win_mat);
-	key= cv::waitKey(30);
+	      key= cv::waitKey(30);
 }
 
  error = camera.StopCapture();

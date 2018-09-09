@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
-project(test)
+
+project(camera)
+
 find_package( OpenCV REQUIRED )
-find_package( FlyCapture2 REQUIRED )
-add_executable( test test.cpp )
-target_link_libraries( test ${OpenCV_LIBS} )
-target_link_libraries( test ${FlyCapture2_LIBS} )
+
+add_executable(camera include/FlyCapture2.h T0R0Vision/T0R0Vision.h  T0R0Vision/T0R0Vision.cpp CameraNav.cpp )
+
+target_link_libraries( camera ${OpenCV_LIBS} )
+

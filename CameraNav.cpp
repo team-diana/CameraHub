@@ -6,23 +6,28 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "TcpClient/TcpClient.h"
 #include "T0R0Vision.h"
+
 using namespace FlyCapture2;
+
+int main()
+{
+  double x, y;
+  int changed;
+
+const std::string SERVER_ADDRESS	{ "10.0.0.10" };
+const std::string PORT	          { "50215" };
+const std::string CLIENT_ID		    { "T0-R0 video" };
+
+const std::string MOUSE_PORT	{ "50214" };
+const std::string THRESH_PORT	{ "50213" };
+const std::string CMDS_PORT	{ "50212" };
 
 TcpServer *mouse_server = new TcpServer(MOUSE_PORT);
 TcpServer *thresh_server = new TcpServer(THRESH_PORT);
 TcpServer *cmds_server = new TcpServer(CMDS_PORT);
+
 T0R0Vision *vision = new T0R0Vision();
 
-int main()
-{
-double x, y;
-int changed;
-const std::string SERVER_ADDRESS	{ "10.0.0.10" };
-const std::string PORT	{ "50215" };
-const std::string MOUSE_PORT	{ "50214" };
-const std::string THRESH_PORT	{ "50213" };
-const std::string CMDS_PORT	{ "50212" };
-const std::string CLIENT_ID		{ "T0-R0 video" };
   cv::Size bigimg(960,768);
   cv::Size smallimg(320,256);
   cv::Size window(1280,1024);
@@ -78,7 +83,7 @@ T0R0Vision *vision = new T0R0Vision();
     Camera camera;
     CameraInfo camInfo;
     BusManager *bus =new BusManager();
-Error bus1 = bus->ForceAllIPAddressesAutomatically();
+    Error bus1 = bus->ForceAllIPAddressesAutomatically();
     // Connect the camera
     error = camera.Connect( 0 );
     if ( error != PGRERROR_OK )
@@ -109,7 +114,7 @@ Error bus1 = bus->ForceAllIPAddressesAutomatically();
         std::cout << "Failed to start image capture" << std::endl;
         return false;
     }
-cv::VideoWriter out("appsrc ! videoconvert ! videoscale ! video/x-raw,format=YUY2,width=1280,height=1024, framerate=30/1 ! jpegenc quality=50 ! rtpjpegpay ! udpsink host=" + SERVER_ADDRESS + " port="+ PORT +" ", 1800,0,30, cv::Size(1280,1024), true);
+cv::VideoWriter out("appsrc ! videoconvert ! videoscale ! video/x-raw,format=YUY2,width=1280,height=1024, framerate=30/1 ! jpegenc quality=50 ! rtpjpegpay ! udpsink host=10.0.0.105 port=50215 ", 1800,0,30, cv::Size(1280,1024), true);
 
 if (out.isOpened()){
 	puts("Pipeline Opened");
@@ -151,14 +156,16 @@ while(key != 'q'){
 	}
 //	printf("Frames lost: %d \n", lost);
 	Image rgb;
-	raw.Convert( FlyCapture2::PIXEL_FORMAT_BGR, &rgb );
+
+  raw.Convert( FlyCapture2::PIXEL_FORMAT_BGR, &rgb );
 
 	unsigned int row = (double)rgb.GetReceivedDataSize()/(double)rgb.GetRows();
 
 	cv::Mat image = cv::Mat(rgb.GetRows(), rgb.GetCols(), CV_8UC3, rgb.GetData(),row);
 
   cv::Mat matPG = cv::Mat(rgb.GetRows(), rgb.GetCols(), CV_8UC3, rgb.GetData(),row);
-	resize(matPG, matPG_small, smallimg, cv::INTER_CUBIC);
+
+  resize(matPG, matPG_small, smallimg, cv::INTER_CUBIC);
 
   // Webcam buffering and collecting +++++++++++++++++++
         if(cap.read(Armbuff)) // get a new frame from camera

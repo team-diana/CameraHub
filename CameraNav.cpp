@@ -20,7 +20,7 @@ const std::string CLIENT_ID		    { "T0-R0 video" };
 
 const std::string MOUSE_PORT	{ "50214" };
 const std::string THRESH_PORT	{ "50213" };
-const std::string CMDS_PORT	{ "50212" };
+const std::string CMDS_PORT	  { "50212" };
 
 TcpServer *mouse_server = new TcpServer(MOUSE_PORT);
 TcpServer *thresh_server = new TcpServer(THRESH_PORT);
@@ -51,14 +51,7 @@ T0R0Vision *vision = new T0R0Vision();
   cv::VideoCapture cap(0);
   cv::VideoCapture cap1(1);
 
-  const double fps = cap.get(cv::CAP_PROP_FPS);
-  const int width  = cap.get(cv::CAP_PROP_FRAME_WIDTH);
-  const int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
-  const int fourcc = cap.get(cv::CAP_PROP_FOURCC );
-  const double fps = cap1.get(cv::CAP_PROP_FPS);
-  const int width  = cap1.get(cv::CAP_PROP_FRAME_WIDTH);
-  const int height = cap1.get(cv::CAP_PROP_FRAME_HEIGHT);
-  const int fourcc = cap1.get(cv::CAP_PROP_FOURCC );
+  
   // printf("%d", cap.get(CV_CAP_PROP_CONVERT_RGB));
   cv::Mat matARM;
   cv::Mat matNav;

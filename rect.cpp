@@ -6,11 +6,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 using namespace FlyCapture2;
 
+#define SERVER_ADDRESS "10.0.0.10"
+#define CLIENT_ID "T0-R0 video"
+
 int main()
 {
-  
-const std::string SERVER_ADDRESS	{ "10.0.0.10" };
-const std::string CLIENT_ID		{ "T0-R0 video" };
   cv::Size bigimg(960,768);
   cv::Size smallimg(320,256);
   cv::Size window(1280,1024);
@@ -18,12 +18,12 @@ const std::string CLIENT_ID		{ "T0-R0 video" };
   cv::Mat matPG_small(smallimg, CV_8UC3);
   cv::Mat matbig(bigimg, CV_8UC3);
   cv::Mat Armbuff;
-  int set=0; 
+  int set=0;
   std::cout << "select camera /n" << " ";
   scanf("%d", &set);
-  
+
   // ****************************  ARM camera setup section *******************************
-  
+
   cv::VideoCapture cap(0);
 
 
@@ -43,7 +43,7 @@ const std::string CLIENT_ID		{ "T0-R0 video" };
     return -1;
    }
      cv::Mat matARM_small;
-    
+
     Error error;
     Camera camera;
     CameraInfo camInfo;
@@ -53,7 +53,7 @@ Error bus1 = bus->ForceAllIPAddressesAutomatically();
     error = camera.Connect( 0 );
     if ( error != PGRERROR_OK )
     {
-        std::cout << "Failed to connect to camera" << std::endl;     
+        std::cout << "Failed to connect to camera" << std::endl;
         return false;
     }
 
@@ -61,24 +61,24 @@ Error bus1 = bus->ForceAllIPAddressesAutomatically();
     error = camera.GetCameraInfo( &camInfo );
     if ( error != PGRERROR_OK )
     {
-        std::cout << "Failed to get camera info from camera" << std::endl;     
+        std::cout << "Failed to get camera info from camera" << std::endl;
         return false;
     }
     std::cout << camInfo.vendorName << " "
-              << camInfo.modelName << " " 
+              << camInfo.modelName << " "
               << camInfo.serialNumber << std::endl;
-	
+
     error = camera.StartCapture();
     if ( error == PGRERROR_ISOCH_BANDWIDTH_EXCEEDED )
     {
-        std::cout << "Bandwidth exceeded" << std::endl;     
+        std::cout << "Bandwidth exceeded" << std::endl;
         return false;
     }
     else if ( error != PGRERROR_OK )
     {
-        std::cout << "Failed to start image capture" << std::endl;     
+        std::cout << "Failed to start image capture" << std::endl;
         return false;
-    } 
+    }
 cv::VideoWriter out("appsrc ! videoconvert ! videoscale ! video/x-raw,format=YUY2,width=1280,height=1024, framerate=30/1 ! jpegenc quality=50 ! rtpjpegpay ! udpsink host=10.0.0.101 port=5000", 1800,0,30, cv::Size(1280,1024), true);
 
 if (out.isOpened()){
@@ -90,11 +90,11 @@ else {
 }
 char key = 0;
 int lost =0;
-        
+
 while(key != 'q'){
-	
-	
-	
+
+
+
 	Image raw;
 	Error error = camera.RetrieveBuffer(&raw);
 	if (error != PGRERROR_OK){
@@ -105,35 +105,35 @@ while(key != 'q'){
 //	printf("Frames lost: %d \n", lost);
 	Image rgb;
 	raw.Convert( FlyCapture2::PIXEL_FORMAT_BGR, &rgb );
-	
+
 	unsigned int row = (double)rgb.GetReceivedDataSize()/(double)rgb.GetRows();
-	
+
 	cv::Mat image = cv::Mat(rgb.GetRows(), rgb.GetCols(), CV_8UC3, rgb.GetData(),row);
-	
+
 	//cv::imshow("image",image);
         cv::Mat matPG = cv::Mat(rgb.GetRows(), rgb.GetCols(), CV_8UC3, rgb.GetData(),row);
 	resize(matPG, matPG_small, smallimg, cv::INTER_CUBIC);
-        
+
         if(cap.read(Armbuff))
 	{
         Armbuff.copyTo(matARM);
         //cap >> matARM;
-        
+
 	}
         //Armbuff = matARM; // get a new frame from camera
- 	
+
   	cv::resize(matARM, matARM_small, smallimg, cv::INTER_CUBIC );
-  
-	
+
+
   if (set==1)
-  { 
+  {
    	matbig=matARM;
   }
-  else if (set==2) 
+  else if (set==2)
   {
    	matbig=matPG;
   }
-  else 
+  else
   {
    	matbig=matbig;
   }
@@ -141,8 +141,8 @@ while(key != 'q'){
   cv::resize(matbig, matbig, bigimg, cv::INTER_CUBIC );
 
         //cvtColor(matARM,matARM, cv::COLOR_BGR2RGB);
-	
-       
+
+
 
         matbig.copyTo(win_mat(cv::Rect(  0, 0, 960, 768)));
         matPG_small.copyTo(win_mat(cv::Rect(0,760,320,256)));
@@ -156,13 +156,11 @@ while(key != 'q'){
  error = camera.StopCapture();
     if ( error != PGRERROR_OK )
     {
-        // This may fail when the camera was removed, so don't show 
+        // This may fail when the camera was removed, so don't show
         // an error message
-    }  
+    }
 
     camera.Disconnect();
 
     return 0;
-}    
-
-
+}

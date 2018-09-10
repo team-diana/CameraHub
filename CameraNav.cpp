@@ -7,6 +7,14 @@
 #include "TcpClient/TcpClient.h"
 #include "T0R0Vision.h"
 
+#define SERVER_ADDRESS "10.0.0.10"
+#define PORT 50215
+#define CLIENT_ID "T0-R0 video"
+
+#define MOUSE_PORT 50214
+#define THRESH_PORT 50213
+#define CMDS_PORT 50212
+
 using namespace FlyCapture2;
 
 int main()
@@ -14,19 +22,11 @@ int main()
   double x, y;
   int changed;
 
-const std::string SERVER_ADDRESS	{ "10.0.0.10" };
-const std::string PORT	          { "50215" };
-const std::string CLIENT_ID		    { "T0-R0 video" };
+  TcpServer *mouse_server = new TcpServer(MOUSE_PORT);
+  TcpServer *thresh_server = new TcpServer(THRESH_PORT);
+  TcpServer *cmds_server = new TcpServer(CMDS_PORT);
 
-const std::string MOUSE_PORT	{ "50214" };
-const std::string THRESH_PORT	{ "50213" };
-const std::string CMDS_PORT	  { "50212" };
-
-TcpServer *mouse_server = new TcpServer(MOUSE_PORT);
-TcpServer *thresh_server = new TcpServer(THRESH_PORT);
-TcpServer *cmds_server = new TcpServer(CMDS_PORT);
-
-T0R0Vision *vision = new T0R0Vision();
+  T0R0Vision *vision = new T0R0Vision();
 
   cv::Size bigimg(960,768);
   cv::Size smallimg(320,256);
@@ -51,7 +51,7 @@ T0R0Vision *vision = new T0R0Vision();
   cv::VideoCapture cap(0);
   cv::VideoCapture cap1(1);
 
-  
+
   // printf("%d", cap.get(CV_CAP_PROP_CONVERT_RGB));
   cv::Mat matARM;
   cv::Mat matNav;

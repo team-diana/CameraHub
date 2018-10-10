@@ -1,11 +1,10 @@
-#include "FlyCapture2.h"
-#include "BusManager.h"
+#include "include/FlyCapture2.h"
+#include "include/BusManager.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "TcpClient/TcpClient.h"
-#include "T0R0Vision.h"
+#include "T0R0Vision/T0R0Vision.h"
 
 
 using namespace FlyCapture2;
@@ -15,7 +14,7 @@ int main()
   T0R0Vision *vision = new T0R0Vision();
   BusManager *bus =new BusManager();
 
-  cv::Size smallimg(640,512);
+  cv::Size smallimg(630,502);
   cv::Size window(1280,1024);
   cv::Mat win_mat(window, CV_8UC3);
   cv::Mat matPG_small(smallimg, CV_8UC3);
@@ -31,22 +30,22 @@ int main()
 
   // ****************************  Webcam setup section *******************************
 
-  cv::VideoCapture cap(0);
-  cv::VideoCapture cap1(1);
-
-
+  cv::VideoCapture cap(1);
+//  cv::VideoCapture cap1(1);
+//  const double fps = cap.get(cv::CAP_PROP_FPS);
+//  const double fps1 = cap1.get(cv::CAP_PROP_FPS);
    //if not success, exit program
    if (cap.isOpened() == false)
    {
     std::cout << "Cannot open the ARM camera" << std::endl;
     //return -1;
    }
-   if (cap1.isOpened() == false)
-   {
-    std::cout << "Cannot open the Chassis camera" << std::endl;
+  // if (cap1.isOpened() == false)
+  // {
+   // std::cout << "Cannot open the Chassis camera" << std::endl;
     //return -1;
-   }
-
+//   }
+//std::cout << "Camera FPS ARM: " << fps << "Camera FPS NAV: " << fps1 << "\n" << " ";
 // ************** Pointgrey setup **************************************+
 
     Error error;
@@ -58,14 +57,14 @@ int main()
     if ( error != PGRERROR_OK )
     {
         std::cout << "Failed to connect to camera" << std::endl;
-        return false;
+        return -1;
     }
     // Get the camera info and print it out
     error = camera.GetCameraInfo( &camInfo );
     if ( error != PGRERROR_OK )
     {
         std::cout << "Failed to get camera info from camera" << std::endl;
-        return false;
+        return -1;
     }
     std::cout << camInfo.vendorName << " "
               << camInfo.modelName << " "
@@ -75,14 +74,14 @@ int main()
     if ( error == PGRERROR_ISOCH_BANDWIDTH_EXCEEDED )
     {
         std::cout << "Bandwidth exceeded" << std::endl;
-        return false;
+        return -1;
     }
     else if ( error != PGRERROR_OK )
     {
         std::cout << "Failed to start image capture" << std::endl;
-        return false;
+        return -1;
     }
-cv::VideoWriter out("appsrc ! videoconvert ! videoscale ! video/x-raw,format=YUY2,width=1280,height=1024, framerate=30/1 ! jpegenc quality=50 ! rtpjpegpay ! udpsink host=10.0.0.105 port=50215 ", 1800,0,30, cv::Size(1280,1024), true);
+cv::VideoWriter out("appsrc ! videoconvert ! videoscale ! video/x-raw,format=YUY2,width=1280,height=1024, framerate=30/1 ! jpegenc quality=50 ! rtpjpegpay ! udpsink host=10.0.0.107 port=50215 ", 1800,0,30, cv::Size(1280,1024), true);
 
 if (out.isOpened()){
 	puts("Pipeline Opened");
@@ -112,35 +111,34 @@ while(key != 'q'){
 
 	unsigned int row = (double)rgb.GetReceivedDataSize()/(double)rgb.GetRows();
 
-	cv::Mat image = cv::Mat(rgb.GetRows(), rgb.GetCols(), CV_8UC3, rgb.GetData(),row);
 
-  cv::Mat matPG = cv::Mat(rgb.GetRows(), rgb.GetCols(), CV_8UC3, rgb.GetData(),row);
+ 	 cv::Mat matPG = cv::Mat(rgb.GetRows(), rgb.GetCols(), CV_8UC3, rgb.GetData(),row);
 
-  resize(matPG, matPG_small, smallimg, cv::INTER_CUBIC);
+ 	 resize(matPG, matPG_small, smallimg, cv::INTER_CUBIC);
 
   // Webcam buffering and collecting +++++++++++++++++++
-        if(cap.read(Armbuff)) // get a new frame from camera
-	      {
-        Armbuff.copyTo(matARM);
-        //cap >> matARM;
-	      }
-        if(cap1.read(Navbuff)) // get a new frame from camera
-        {
-          Navbuff.copyTo(matNav);
+       // if(cap.read(Armbuff)) // get a new frame from camera
+	 //     {
+      //  Armbuff.copyTo(matARM);
+        cap >> matARM;
+	//      }
+       // if(cap1.read(Navbuff)) // get a new frame from camera
+      //  {
+       //   Navbuff.copyTo(matNav);
           //cap >> matNav;
-        }
+      //  }
   	cv::resize(matARM, matARM_small, smallimg, cv::INTER_CUBIC );
-    cv::resize(matNav, matNav_small, smallimg, cv::INTER_CUBIC );
+       // cv::resize(matNav, matNav_small, smallimg, cv::INTER_CUBIC );
 // +++++++++++ Case of use  ++++++++++++
 
-  cache = vision->findCache(matPG);
-  cv::resize(cache, cache, smallimg, cv::INTER_CUBIC );
+//  cache = vision->findCache(matPG);
+//  cv::resize(cache, cache, smallimg, cv::INTER_CUBIC );
 //    ++++++++++++  Rectangles assembly ++++++++++++++++++++++
 
-        matPG_small.copyTo(win_mat(cv::Rect(0,0,640,512)));
-        matARM_small.copyTo(win_mat(cv::Rect(0,512,640,512)));
-        matNav_small.copyTo(win_mat(cv::Rect(640,0,640,512)));
-        cache.copyTo(win_mat(cv::Rect(640,512,640,512)));
+        matPG_small.copyTo(win_mat(cv::Rect(0,0,630,502)));
+        matARM_small.copyTo(win_mat(cv::Rect(0,512,630,502)));
+ //       matNav_small.copyTo(win_mat(cv::Rect(640,0,640,512)));
+        //cache.copyTo(win_mat(cv::Rect(640,512,640,512)));
         //cv::imshow("image", win_mat);
         out.write(win_mat);
 	      key= cv::waitKey(30);
@@ -155,7 +153,8 @@ while(key != 'q'){
 
     camera.Disconnect();
     cap.release();
-    cap1.release();
+   // cap1.release();
 
     return 0;
+}
 }

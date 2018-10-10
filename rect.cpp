@@ -18,14 +18,15 @@ int main()
   cv::Mat matPG_small(smallimg, CV_8UC3);
   cv::Mat matbig(bigimg, CV_8UC3);
   cv::Mat Armbuff;
+  cv::Mat Navbuff;
   int set=0;
   std::cout << "select camera /n" << " ";
   scanf("%d", &set);
 
   // ****************************  ARM camera setup section *******************************
 
-  cv::VideoCapture cap(0);
-
+  cv::VideoCapture cap(1);
+  cv::VideoCapture cap1(2);
 
   const double fps = cap.get(cv::CAP_PROP_FPS);
   const int width  = cap.get(cv::CAP_PROP_FRAME_WIDTH);
@@ -34,7 +35,7 @@ int main()
 
   // printf("%d", cap.get(CV_CAP_PROP_CONVERT_RGB));
   cv::Mat matARM;
-
+  cv::Mat matNav;
 
    //if not success, exit program
    if (cap.isOpened() == false)
@@ -42,8 +43,14 @@ int main()
     std::cout << "Cannot open the ARM camera" << std::endl;
     return -1;
    }
-     cv::Mat matARM_small;
-
+     
+	if (cap1.isOpened() == false)
+ 	{
+	std::cout << "Cannot open nav camera " << std::endl;
+	return -1;
+	}
+	cv::Mat matARM_small;
+        cv::Mat matNav_small;
     Error error;
     Camera camera;
     CameraInfo camInfo;
@@ -79,7 +86,7 @@ Error bus1 = bus->ForceAllIPAddressesAutomatically();
         std::cout << "Failed to start image capture" << std::endl;
         return false;
     }
-cv::VideoWriter out("appsrc ! videoconvert ! videoscale ! video/x-raw,format=YUY2,width=1280,height=1024, framerate=30/1 ! jpegenc quality=50 ! rtpjpegpay ! udpsink host=10.0.0.101 port=5000", 1800,0,30, cv::Size(1280,1024), true);
+cv::VideoWriter out("appsrc ! videoconvert ! videoscale ! video/x-raw,format=YUY2,width=1280,height=1024, framerate=30/1 ! jpegenc quality=50 ! rtpjpegpay ! udpsink host=10.0.0.107 port=50215", 1800,0,30, cv::Size(1280,1024), true);
 
 if (out.isOpened()){
 	puts("Pipeline Opened");
@@ -120,10 +127,13 @@ while(key != 'q'){
         //cap >> matARM;
 
 	}
+	if(cap1.read(Navbuff)){
+	Navbuff.copyTo(matNav);
+	}
         //Armbuff = matARM; // get a new frame from camera
 
   	cv::resize(matARM, matARM_small, smallimg, cv::INTER_CUBIC );
-
+       cv::resize(matNav, matNav_small, smallimg, cv::INTER_CUBIC);
 
   if (set==1)
   {
@@ -133,6 +143,9 @@ while(key != 'q'){
   {
    	matbig=matPG;
   }
+  else if (set==3){
+	matbig=matNav;
+	}
   else
   {
    	matbig=matbig;
@@ -147,7 +160,7 @@ while(key != 'q'){
         matbig.copyTo(win_mat(cv::Rect(  0, 0, 960, 768)));
         matPG_small.copyTo(win_mat(cv::Rect(0,760,320,256)));
         matARM_small.copyTo(win_mat(cv::Rect(320,760,320,256)));
-
+	matNav_small.copyTo(win_mat(cv::Rect(640,760,320,256)));
         //cv::imshow("image", win_mat);
         out.write(win_mat);
 	key= cv::waitKey(30);

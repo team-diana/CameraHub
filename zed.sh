@@ -1,0 +1,1 @@
+gst-launch-1.0 v4l2src device=/dev/video1 ! videoconvert ! videoscale ! video/x-raw,format=YUY2,width=960,height=480, framerate=30/1 ! jpegenc quality=30 ! rtpjpegpay ! udpsink host=10.0.0.104 port=50217
